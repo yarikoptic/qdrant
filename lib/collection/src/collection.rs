@@ -1128,12 +1128,7 @@ impl Collection {
             let mut config = self.collection_config.write().await;
             config.hnsw_config = hnsw_config_diff.update(&config.hnsw_config)?;
         }
-        {
-            let shard_holder = self.shards_holder.read().await;
-            for replica_set in shard_holder.all_shards() {
-                replica_set.on_optimizer_config_update().await?;
-            }
-        }
+        self.trigger_optimizers().await?;
         self.collection_config.read().await.save(&self.path)?;
         Ok(())
     }
@@ -1202,12 +1197,7 @@ impl Collection {
             config.optimizer_config =
                 DiffConfig::update(optimizer_config_diff, &config.optimizer_config)?;
         }
-        {
-            let shard_holder = self.shards_holder.read().await;
-            for replica_set in shard_holder.all_shards() {
-                replica_set.on_optimizer_config_update().await?;
-            }
-        }
+        self.trigger_optimizers().await?;
         self.collection_config.read().await.save(&self.path)?;
         Ok(())
     }
@@ -1224,13 +1214,17 @@ impl Collection {
             let mut config = self.collection_config.write().await;
             config.optimizer_config = optimizer_config;
         }
-        {
-            let shard_holder = self.shards_holder.read().await;
-            for replica_set in shard_holder.all_shards() {
-                replica_set.on_optimizer_config_update().await?;
-            }
-        }
+        self.trigger_optimizers().await?;
         self.collection_config.read().await.save(&self.path)?;
+        Ok(())
+    }
+
+    /// Trigger the optimizers on all shards for this collection
+    async fn trigger_optimizers(&self) -> CollectionResult<()> {
+        let shard_holder = self.shards_holder.read().await;
+        for replica_set in shard_holder.all_shards() {
+            replica_set.on_optimizer_config_update().await?;
+        }
         Ok(())
     }
 
