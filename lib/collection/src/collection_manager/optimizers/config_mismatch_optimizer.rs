@@ -115,6 +115,11 @@ impl ConfigMismatchOptimizer {
                                 }
                             }
 
+                            // Check quantization mismatch
+                            if vector_data.quantization_config != self.quantization_config {
+                                return true;
+                            }
+
                             false
                         });
 
