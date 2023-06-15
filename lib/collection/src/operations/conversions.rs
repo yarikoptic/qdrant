@@ -403,6 +403,7 @@ impl TryFrom<api::grpc::qdrant::UpdateVectorParams> for UpdateVectorParams {
     fn try_from(vector_params: api::grpc::qdrant::UpdateVectorParams) -> Result<Self, Self::Error> {
         Ok(Self {
             hnsw_config: vector_params.hnsw_config.map(Into::into),
+            quantization_config: None,
         })
     }
 }

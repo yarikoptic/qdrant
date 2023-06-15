@@ -1188,6 +1188,11 @@ impl Collection {
                             .unwrap_or(new_diff)
                     });
                 }
+
+                // Update vector quantization config
+                if let Some(ref config) = update_params.quantization_config {
+                    vector_params.quantization_config.replace(config.clone());
+                }
             }
         }
         self.collection_config.read().await.save(&self.path)?;
