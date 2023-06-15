@@ -23,6 +23,12 @@ def test_collection_update():
                 "hnsw": {
                     "m": 16,
                 },
+                "quantization": {
+                    "scalar": {
+                        "type": "int8",
+                        "quantile": 0.8
+                    }
+                }
             },
             "optimizers_config": {
                 "default_segment_number": 6,
@@ -31,6 +37,13 @@ def test_collection_update():
             "hnsw": {
                 "ef_construct": 123,
             },
+            "quantization": {
+                "scalar": {
+                    "type": "int8",
+                    "quantile": 0.99,
+                    "always_ram": True
+                }
+            }
         }
     )
     assert response.ok
