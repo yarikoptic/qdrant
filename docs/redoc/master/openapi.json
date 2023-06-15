@@ -5875,6 +5875,18 @@
                 "nullable": true
               }
             ]
+          },
+          "quantization_config": {
+            "description": "Quantization parameters to update. If none - it is left unchanged.",
+            "default": null,
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuantizationConfig"
+              },
+              {
+                "nullable": true
+              }
+            ]
           }
         }
       },
@@ -5901,6 +5913,17 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/HnswConfigDiff"
+              },
+              {
+                "nullable": true
+              }
+            ]
+          },
+          "quantization_config": {
+            "description": "Update params for quantization. If none - it is left unchanged.",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuantizationConfig"
               },
               {
                 "nullable": true
