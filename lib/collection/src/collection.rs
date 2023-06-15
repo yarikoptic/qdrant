@@ -1199,26 +1199,6 @@ impl Collection {
         Ok(())
     }
 
-    pub async fn update_vectors_from_diff(
-        &self,
-        update_vectors_diff: UpdateVectorsConfig,
-    ) -> CollectionResult<()> {
-        {
-            let mut config = self.collection_config.write().await;
-
-            // For each vector, update params
-            for (vector_name, update_params) in update_vectors_diff.params_iter() {
-                let vector_params = config.params.get_vector_params_mut(vector_name)?;
-                if let Some(diff) = update_params.hnsw_config {
-                    vector_params.hnsw_config.replace(diff);
-                }
-            }
-        }
-        self.trigger_optimizers().await?;
-        self.collection_config.read().await.save(&self.path)?;
-        Ok(())
-    }
-
     pub fn request_shard_transfer(&self, shard_transfer: ShardTransfer) {
         self.request_shard_transfer_cb.deref()(shard_transfer)
     }
