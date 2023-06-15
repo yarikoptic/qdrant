@@ -113,6 +113,7 @@ fn configure_validation(builder: Builder) -> Builder {
             ("VectorParams.quantization_config", ""),
             ("VectorParamsMap.map", ""),
             ("UpdateVectorParams.hnsw_config", ""),
+            ("UpdateVectorParams.quantization_config", ""),
             ("UpdateVectorParamsMap.map", ""),
             ("QuantizationConfig.quantization", ""),
             ("ScalarQuantization.quantile", "custom = \"crate::grpc::validate::validate_f32_range_min_0_5_max_1\""),
