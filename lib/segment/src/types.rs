@@ -401,6 +401,17 @@ pub struct ScalarQuantizationConfig {
     pub always_ram: Option<bool>,
 }
 
+impl ScalarQuantizationConfig {
+    /// Detect configuration mismatch against `other` that requires rebuilding
+    ///
+    /// Returns true only if both conditions are met:
+    /// - this configuration does not match `other`
+    /// - to effectively change the configuration, an quantization rebuild is required
+    pub fn mismatch_requires_rebuild(&self, other: &Self) -> bool {
+        self.r#type != other.r#type || self.quantile != other.quantile
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize, JsonSchema, Validate, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarQuantization {
     #[validate]
@@ -424,6 +435,17 @@ pub struct ProductQuantizationConfig {
     pub always_ram: Option<bool>,
 }
 
+impl ProductQuantizationConfig {
+    /// Detect configuration mismatch against `other` that requires rebuilding
+    ///
+    /// Returns true only if both conditions are met:
+    /// - this configuration does not match `other`
+    /// - to effectively change the configuration, an quantization rebuild is required
+    pub fn mismatch_requires_rebuild(&self, other: &Self) -> bool {
+        self.compression != other.compression
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize, JsonSchema, Validate, Clone, PartialEq, Eq, Hash)]
 pub struct ProductQuantization {
     #[validate]
@@ -445,6 +467,22 @@ impl Eq for ScalarQuantizationConfig {}
 pub enum QuantizationConfig {
     Scalar(ScalarQuantization),
     Product(ProductQuantization),
+}
+
+impl QuantizationConfig {
+    /// Detect configuration mismatch against `other` that requires rebuilding
+    ///
+    /// Returns true only if both conditions are met:
+    /// - this configuration does not match `other`
+    /// - to effectively change the configuration, an quantization rebuild is required
+    pub fn mismatch_requires_rebuild(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Scalar(a), Self::Scalar(b)) => a.scalar.mismatch_requires_rebuild(&b.scalar),
+            (Self::Scalar(_), _) => true,
+            (Self::Product(a), Self::Product(b)) => a.product.mismatch_requires_rebuild(&b.product),
+            (Self::Product(_), _) => true,
+        }
+    }
 }
 
 impl Validate for QuantizationConfig {
