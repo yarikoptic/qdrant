@@ -12,7 +12,7 @@ use itertools::Itertools;
 use segment::common::version::StorageVersion;
 use segment::spaces::tools::{peek_top_largest_iterable, peek_top_smallest_iterable};
 use segment::types::{
-    ExtendedPointId, Order, ScoredPoint, WithPayload, WithPayloadInterface, WithVector,
+    ExtendedPointId, Order, ScoredPoint, WithPayload, WithPayloadInterface, WithVector, QuantizationConfig,
 };
 use semver::Version;
 use tar::Builder as TarBuilder;
@@ -1144,6 +1144,23 @@ impl Collection {
         Ok(())
     }
 
+    /// Updates quantization config:
+    /// Saves new params on disk
+    ///
+    /// After this, `recreate_optimizers_blocking` must be called to create new optimizers using
+    /// the updated configuration.
+    pub async fn update_quantization_config_from_diff(
+        &self,
+        quantization_config: QuantizationConfig,
+    ) -> CollectionResult<()> {
+        {
+            let mut config = self.collection_config.write().await;
+            config.quantization_config.replace(quantization_config);
+        }
+        self.collection_config.read().await.save(&self.path)?;
+        Ok(())
+    }
+
     /// Updates vectors config:
     /// Saves new params on disk
     ///
@@ -1172,26 +1189,6 @@ impl Collection {
                 }
             }
         }
-        self.collection_config.read().await.save(&self.path)?;
-        Ok(())
-    }
-
-    pub async fn update_vectors_from_diff(
-        &self,
-        update_vectors_diff: UpdateVectorsConfig,
-    ) -> CollectionResult<()> {
-        {
-            let mut config = self.collection_config.write().await;
-
-            // For each vector, update params
-            for (vector_name, update_params) in update_vectors_diff.params_iter() {
-                let vector_params = config.params.get_vector_params_mut(vector_name)?;
-                if let Some(diff) = update_params.hnsw_config {
-                    vector_params.hnsw_config.replace(diff);
-                }
-            }
-        }
-        self.trigger_optimizers().await?;
         self.collection_config.read().await.save(&self.path)?;
         Ok(())
     }
