@@ -1110,6 +1110,11 @@ impl Collection {
         Ok(points)
     }
 
+    /// Updates collection params:
+    /// Saves new params on disk
+    ///
+    /// After this, `recreate_optimizers_blocking` must be called to create new optimizers using
+    /// the updated configuration.
     pub async fn update_params_from_diff(
         &self,
         params_diff: CollectionParamsDiff,
@@ -1122,6 +1127,11 @@ impl Collection {
         Ok(())
     }
 
+    /// Updates HNSW config:
+    /// Saves new params on disk
+    ///
+    /// After this, `recreate_optimizers_blocking` must be called to create new optimizers using
+    /// the updated configuration.
     pub async fn update_hnsw_config_from_diff(
         &self,
         hnsw_config_diff: HnswConfigDiff,
@@ -1130,7 +1140,6 @@ impl Collection {
             let mut config = self.collection_config.write().await;
             config.hnsw_config = hnsw_config_diff.update(&config.hnsw_config)?;
         }
-        self.recreate_optimizers_blocking().await?;
         self.collection_config.read().await.save(&self.path)?;
         Ok(())
     }
@@ -1187,9 +1196,10 @@ impl Collection {
     }
 
     /// Updates shard optimization params:
-    /// - Saves new params on disk
-    /// - Stops existing optimization loop
-    /// - Runs new optimizers with new params
+    /// Saves new params on disk
+    ///
+    /// After this, `recreate_optimizers_blocking` must be called to create new optimizers using
+    /// the updated configuration.
     pub async fn update_optimizer_params_from_diff(
         &self,
         optimizer_config_diff: OptimizersConfigDiff,
@@ -1199,15 +1209,14 @@ impl Collection {
             config.optimizer_config =
                 DiffConfig::update(optimizer_config_diff, &config.optimizer_config)?;
         }
-        self.recreate_optimizers_blocking().await?;
         self.collection_config.read().await.save(&self.path)?;
         Ok(())
     }
 
-    /// Updates shard optimization params:
-    /// - Saves new params on disk
-    /// - Stops existing optimization loop
-    /// - Runs new optimizers with new params
+    /// Updates shard optimization params: Saves new params on disk
+    ///
+    /// After this, `recreate_optimizers_blocking` must be called to create new optimizers using
+    /// the updated configuration.
     pub async fn update_optimizer_params(
         &self,
         optimizer_config: OptimizersConfig,
@@ -1216,7 +1225,6 @@ impl Collection {
             let mut config = self.collection_config.write().await;
             config.optimizer_config = optimizer_config;
         }
-        self.recreate_optimizers_blocking().await?;
         self.collection_config.read().await.save(&self.path)?;
         Ok(())
     }
@@ -1229,7 +1237,7 @@ impl Collection {
     ///
     /// Partially blocking. Stopping existing optimizers is blocking. Starting new optimizers is
     /// not blocking.
-    async fn recreate_optimizers_blocking(&self) -> CollectionResult<()> {
+    pub async fn recreate_optimizers_blocking(&self) -> CollectionResult<()> {
         let shard_holder = self.shards_holder.read().await;
         let updates = shard_holder.all_shards().map(|replica_set| replica_set.on_optimizer_config_update());
         try_join_all(updates).await?;
