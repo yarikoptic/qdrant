@@ -1193,6 +1193,11 @@ impl Collection {
                 if let Some(ref config) = update_params.quantization_config {
                     vector_params.quantization_config.replace(config.clone());
                 }
+
+                // Update on_disk flag
+                if let Some(on_disk) = update_params.on_disk {
+                    vector_params.on_disk.replace(on_disk);
+                }
             }
         }
         self.collection_config.read().await.save(&self.path)?;

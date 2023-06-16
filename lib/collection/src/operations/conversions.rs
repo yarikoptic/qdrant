@@ -407,6 +407,7 @@ impl TryFrom<api::grpc::qdrant::UpdateVectorParams> for UpdateVectorParams {
                 .map(grpc_to_segment_quantization_config)
                 .transpose()
                 .map_err(Status::invalid_argument)?,
+            on_disk: vector_params.on_disk,
         })
     }
 }

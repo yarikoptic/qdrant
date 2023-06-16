@@ -889,6 +889,9 @@ pub struct UpdateVectorParams {
     )]
     #[validate]
     pub quantization_config: Option<QuantizationConfig>,
+    /// If true, vectors are served from disk, improving RAM usage at the cost of latency
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub on_disk: Option<bool>,
 }
 
 /// Vector update params separator for single and multiple vector modes

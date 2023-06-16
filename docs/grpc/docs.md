@@ -910,6 +910,7 @@ Note: 1kB = 1 vector of size 256. |
 | ----- | ---- | ----- | ----------- |
 | hnsw_config | [HnswConfigDiff](#qdrant-HnswConfigDiff) | optional | Update params for HNSW index. If empty object - it will be unset |
 | quantization_config | [QuantizationConfig](#qdrant-QuantizationConfig) | optional | Update quantization params. If none - it is left unchanged.Quantization configuration of vector |
+| on_disk | [bool](#bool) | optional | If true - serve vectors from disk. If set to false, the vectors will be loaded in RAM. |
 
 
 
